@@ -175,5 +175,19 @@ class model
         return finalResult;
 
     }
+    vector<Vector2d> getUV(int i)//取得指定位置的原始uv值
+    {
+        vector<int>order=getTexOrder(i);//取得这个位置的三角形对应的顺序
+        vector<Vector2d> result;
+        for(int i=0;i<3;i++)
+        {
+            result.push_back(Vector2d(getTexture(i)[0],getTexture(i)[1]));
+        }
+        return result;
+
+    }
+
+
+
 
 };

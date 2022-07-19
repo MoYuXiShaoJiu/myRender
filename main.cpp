@@ -50,11 +50,13 @@ int  main()
     vector<int> temp;//用来暂时存储点的次序
     Vector3d tempVertex[3];//用来暂时存储三个点
     Vector3d original[3];
-    vector<TGAColor> vertexColor;//三角形三个顶点的颜色
+    vector<Vector2d> uvs;
+    //vector<TGAColor> vertexColor;//三角形三个顶点的颜色
     for(int i=0;i<myModel->faceNumber();i++)//对每个三角形渲染
     {
         temp=myModel->getTriangle(i);//取得序列
-        vertexColor=myModel->getcolor(i);//所以问题出现在这里
+        //vertexColor=myModel->getcolor(i);//所以问题出现在这里
+        uvs=myModel->getUV(i);
         for(int j=0;j<3;j++)
         {
             tempVertex[j]=world2screen(myModel->getVertex(temp[j])) ;
@@ -67,7 +69,7 @@ int  main()
        
         if(intensity>0)
         {
-            triangle3D(tempVertex[0],tempVertex[1],tempVertex[2],image, vertexColor,intensity,zBufferP,width);
+            triangle3D(tempVertex[0],tempVertex[1],tempVertex[2],image, uvs,intensity,zBufferP,width,myModel->diffuseMap);
         }
     }
 

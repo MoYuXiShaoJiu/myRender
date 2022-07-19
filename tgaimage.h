@@ -57,6 +57,16 @@ struct TGAColor {
 		}
 		return *this;
 	}
+	TGAColor operator*(double intensity)
+	{
+		TGAColor res=*this;
+		res.r=res.r*intensity;
+		res.g=res.g*intensity;
+		res.b=res.b*intensity;
+		return res;
+
+	}
+
 };
 
 
