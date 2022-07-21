@@ -8,12 +8,12 @@ using namespace std;
 const TGAColor white = TGAColor(255, 255, 255, 255);
 const TGAColor red = TGAColor(255, 0, 0, 255);
 const TGAColor green=TGAColor(0,255,0,255);
-const int height = 800;
-const int width = 800;
+const int Myheight = 800;
+const int Mywidth = 800;
 
 Vector3d world2screen(Vector3d v) 
 {
-    return Vector3d(int((v.x()+1.)*width/2.+.5), int((v.y()+1.)*height/2.+.5), v.z());
+    return Vector3d(int((v.x()+1.)*Mywidth/2.+.5), int((v.y()+1.)*Myheight/2.+.5), v.z());
 }
 
 
@@ -44,19 +44,23 @@ int  main()
 
     Vector3d light_dir(0,0,1);
     myModel = new model("obj/african_head.obj");//打开文件
-    double zBuffer[width][height] = {0};//其实这里应该是无限远的值
+    double zBuffer[Mywidth][Myheight] = {0};//其实这里应该是无限远的值
     double* zBufferP=zBuffer[0];//zbuffer的指针
-    TGAImage image(width, height, TGAImage::RGB);//创建图
+    TGAImage image(Mywidth, Myheight, TGAImage::RGB);//创建图
     vector<int> temp;//用来暂时存储点的次序
     Vector3d tempVertex[3];//用来暂时存储三个点
     Vector3d original[3];
     vector<Vector2d> uvs;
+
     //vector<TGAColor> vertexColor;//三角形三个顶点的颜色
     for(int i=0;i<myModel->faceNumber();i++)//对每个三角形渲染
     {
+        
+        uvs.clear();
         temp=myModel->getTriangle(i);//取得序列
         //vertexColor=myModel->getcolor(i);//所以问题出现在这里
         uvs=myModel->getUV(i);
+        //cout<<uvs[0][0]<<" "<<uvs[0][1]<<" "<<"\n"<<endl;
         for(int j=0;j<3;j++)
         {
             tempVertex[j]=world2screen(myModel->getVertex(temp[j])) ;
@@ -69,16 +73,17 @@ int  main()
        
         if(intensity>0)
         {
-            triangle3D(tempVertex[0],tempVertex[1],tempVertex[2],image, uvs,intensity,zBufferP,width,myModel->diffuseMap);
+        
+            triangle3D(tempVertex[0],tempVertex[1],tempVertex[2],image, uvs,intensity,zBufferP,Mywidth,myModel->diffuseMap);
         }
     }
 
-    cout<<"r "<<(int)myModel->diffuseMap.get(489,966).r<<" g "<<(int)myModel->diffuseMap.get(489,966).g<<" b "<<(int)myModel->diffuseMap.get(489,966).b<<endl;
+    //cout<<"r "<<(int)myModel->diffuseMap.get(489,966).r<<" g "<<(int)myModel->diffuseMap.get(489,966).g<<" b "<<(int)myModel->diffuseMap.get(489,966).b<<endl;
     
 
 
     image.flip_vertically();  
-    image.write_tga_file("output.tga");
+    image.write_tga_file("myRender.tga");
     delete myModel;
     return 0;
 

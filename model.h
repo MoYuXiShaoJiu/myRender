@@ -16,13 +16,13 @@ class model
     private:
     vector<Vector3d> vertexs;//点的vector
     vector<vector<int>> faces;//点的连接的vector
-    vector<vector<int>> textureN;//用来存储纹理序列
-    vector<vector<double>> tex;//用来存储纹理矩阵
+    vector<Vector3i> textureN;//用来存储纹理序列
+    vector<Vector2d> tex;//用来存储纹理矩阵
     
     
     public:
     TGAImage diffuseMap;//用来存储纹理本身
-    model(const string fileName):vertexs(),faces()//modle的构造函数，读入obj文件名
+    model(const string fileName):vertexs(),faces(),textureN(),tex()//modle的构造函数，读入obj文件名
     {
         ifstream inputFile ;
         inputFile.open(fileName,ifstream::in);//以读的方式打开
@@ -61,14 +61,16 @@ class model
                
                 iss>>trash;//同样是先把不需要的字母处理掉
                 vector<int> f;
-                vector<int> t;
-                int itrash,idx,tex;
-                while(iss>>idx>>trash>>tex>>trash>>itrash)//看一下obj文件中f开头的行就明白了，中间有/要处理，而且形成三角形的三个点也不是连在一起的
+                Vector3i t;
+                int itrash,idx,Mytex;
+                int k=0;
+                while(iss>>idx>>trash>>Mytex>>trash>>itrash)//看一下obj文件中f开头的行就明白了，中间有/要处理，而且形成三角形的三个点也不是连在一起的
                 {
                     idx--;
-                    tex--;
+                    Mytex--;
                     f.push_back(idx);
-                    t.push_back(tex);
+                    t[k]=Mytex;
+                    k++;
                    
                 }
                
@@ -79,12 +81,13 @@ class model
 
              else if(!line.compare(0,3,"vt "))//比较是没有问题的
              {
-                vector<double> temp;
+                
                 double dTrash,u,v;
-                iss>>trash1>>u>>v>>dTrash;
-                temp.push_back(u);
-                temp.push_back(v);
+                iss>>trash>>trash;
+                iss>>u>>v;
+                Vector2d temp(u,v);
                 tex.push_back(temp);
+                
              }
 
             
@@ -95,6 +98,17 @@ class model
          cerr<<"# vt#" <<tex.size()<<endl;//检查没有问题
          loadDiffuseTex(fileName,"_diffuse.tga",diffuseMap);
          inputFile.close();
+        //  for(int i=0;i<tex.size();i++)
+        //  {
+        //     for(int j=0;j<2;j++)
+        //     {
+        //         cout<<tex[i][j];
+        //         cout<<"   ";
+                
+        //     }
+        //     cout<<"next";
+        //     cout<<" "<<endl;
+        //  }
     }
 
     //获取三角形的数量
@@ -119,12 +133,12 @@ class model
         return vertexs.size();
     }
     //获取指定的纹理
-    vector<double> getTexture(int n)
+    Vector2d getTexture(int n)
     {
         return this->tex[n];
     }
     //获取指定的纹理序列
-    vector<int> getTexOrder(int n)
+    Vector3i getTexOrder(int n)
     {
         return this->textureN[n];
     }
@@ -134,13 +148,15 @@ class model
         size_t dot=filename.find_last_of(".");
         if(dot==string::npos)return;
         string texfile=filename.substr(0,dot)+suffix;
+       
         cerr<<"texture file "<<texfile<<" loading "<<(img.read_tga_file(texfile.c_str())?"ok":"failed")<<endl;
+        img.flip_vertically();
     }
     vector<TGAColor> getcolor(int faceN)//输入的是f的编号
     {
-        vector<int>  texOrder=this->getTexOrder(faceN);//输入是face数量，这里先取得texOrder
+        Vector3i  texOrder=this->getTexOrder(faceN);//输入是face数量，这里先取得texOrder
         //cout<<"在这里"<<endl;
-        vector<vector<double>> tempTex;//用来暂时存储uv的值
+        vector<Vector2d> tempTex;//用来暂时存储uv的值
         vector<TGAColor> finalResult;//返回的值
         vector<Vector2i> processedUV;
         for(int i=0;i<3;i++)
@@ -154,13 +170,13 @@ class model
 
         }
         //注意一下循环使用的情况
-        for(int j=0;j<3;j++)
-        {
-            //cout<<"processed_uv"<<" u "<<processedUV[j].x()<<" v "<<processedUV[j].y()<<endl;
+        // for(int j=0;j<3;j++)
+        // {
+        //     //cout<<"processed_uv"<<" u "<<processedUV[j].x()<<" v "<<processedUV[j].y()<<endl;
             
             
            
-        }
+        // }
         for(int k=0;k<3;k++)
         {
             finalResult.push_back(diffuseMap.get(processedUV[k].x(),processedUV[k].y()));
@@ -177,11 +193,11 @@ class model
     }
     vector<Vector2d> getUV(int i)//取得指定位置的原始uv值
     {
-        vector<int>order=getTexOrder(i);//取得这个位置的三角形对应的顺序
+        Vector3i order=getTexOrder(i);//取得这个位置的三角形对应的顺序
         vector<Vector2d> result;
         for(int i=0;i<3;i++)
         {
-            result.push_back(Vector2d(getTexture(i)[0],getTexture(i)[1]));
+            result.push_back(this->getTexture(order[i]));
         }
         return result;
 
