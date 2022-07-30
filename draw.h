@@ -43,8 +43,10 @@ void triangle3D(Vector3d v0,Vector3d v1,Vector3d v2,TGAImage& image,vector<Vecto
                 if(p.x()<1&&p.x()>=0&&p.y()<=1&&p.y()>=0&&p.z()<=1&&p.z()>=0)//如果在三角形内
                 {
                     double tempz=p.x()*v0.z()+p.y()*v1.z()+p.z()*v2.z();//通过重心座标计算z的值
+                    //tempz=-tempz;
                     if(tempz>zBuffer[i+j*width])//如果满足zBuffer 条件
                     {
+                        //cout<<tempz<<endl;
                         u=0.0;
                         v=0.0;
                         for(int k=0;k<3;k++)
@@ -66,9 +68,63 @@ void triangle3D(Vector3d v0,Vector3d v1,Vector3d v2,TGAImage& image,vector<Vecto
      
 }
 
+Vector4d PointToHomogeneous(Vector3d temp)//将点转换为齐次坐标
+{
+    return Vector4d(temp.x(),temp.y(),temp.z(),1.0);
+}
 
+Vector4d vectorToHomogeneous(Vector3d temp)//将向量转换为齐次坐标
+{
+    return Vector4d(temp.x(),temp.y(),temp.z(),0.0);
+}
 
+Vector3d HomogeneousTo(Vector4d temp)//将输入的齐次坐标转换为正常的坐标
+{
+    if(temp[3]==0)
+    {
+        return Vector3d(temp[0],temp[1],temp[2]);   
+    }
+    else
+    {
+        return Vector3d(temp[0]/temp[3],temp[1]/temp[3],temp[2]/temp[3]);
+    }
+}
 
+Matrix4d perspective(double zNear,double zFar)//透视投影，
+{
+    Matrix4d temp;
+    temp<< zNear,0,0,0,
+           0,zNear,0,0,
+           0,0,zNear+zFar,-(zNear*zFar),
+           0,0,1,0;
+    return temp;
+}
 
+Matrix4d Mvp(int nx,int ny)//Viewport矩阵，将单位图片投影到要求的图片坐标
+{
+    Matrix4d temp,oth;
+    temp<< nx/2,0,0,(nx-1)/2,
+           0,ny/2,0,(ny-1)/2,
+           0,0,1,0,
+           0,0,0,1;
+  
+    return oth;
+}
+
+Matrix4d cameraM(Vector3d eye_position,Vector3d gaze,Vector3d t)//其中eye_position是决定相机位置的，gase是决定朝向的，t是分野的
+{
+    Vector3d w=(-gaze).normalized();
+    Vector3d u=t.cross(w).normalized();
+    Vector3d v=w.cross(u);
+    Matrix4d temp,result;
+    temp<<u.x(),v.x(),w.x(),eye_position.x(),
+          u.y(),v.y(),w.y(),eye_position.y(),
+          u.z(),v.z(),w.z(),eye_position.z(),
+          0,0,0,1;
+    result=temp.inverse();
+    return temp;
+    
+
+}
 
 
