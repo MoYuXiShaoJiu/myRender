@@ -59,7 +59,7 @@ int  main()
     TGAImage image(Mywidth, Myheight, TGAImage::RGB);//创建图
     vector<int> temp;//用来暂时存储点的次序
     Vector3d tempVertex[3];//用来暂时存储三个点
-    Vector3d perVertex[3];
+    Vector3d screen_coordinate[3];
     Vector3d original[3];
     vector<Vector2d> uvs;
 
@@ -71,14 +71,14 @@ int  main()
     CameraMatrix=cameraM(eye_position,gaze,t);
     projectiveM=perspective(1,-1);//投影矩阵
     MViewP=Mvp(800,800);//Viewport
-    M=MViewP*projectiveM*CameraMatrix;
+    M=MViewP*projectiveM;
 
 
     Matrix4d lesson_viewport,lesson_porjective,lesson_M;
     lesson_porjective<<1,0,0,0,
                        0,1,0,0,
                        0,0,1,0,
-                       0,0,-1/3,1;
+                       0,0,-1.0/3.0,1;
     lesson_viewport<<Mywidth/8*3,0,0,Mywidth/2,
                      0,Myheight/8*3,0,Myheight/2,
                      0,0,255/2,255/2,
@@ -96,9 +96,8 @@ int  main()
         for(int j=0;j<3;j++)
         {
             tempVertex[j]=world2screen(myModel->getVertex(temp[j])) ;
-            original[j]=myModel->getVertex(temp[j]);
-            perVertex[j]= HomogeneousTo(lesson_viewport*lesson_porjective*CameraMatrix*PointToHomogeneous(original[j]));
-            //cout<<"color "<<i<<" r "<<(vertexColor[i].r) <<" g "<<(vertexColor[i].g) <<" b "<<(vertexColor[i].b) <<endl;//输出的值确实是满足要求的
+            original[j]=myModel->getVertex(temp[j]);//world coordinates
+            screen_coordinate[j]= HomogeneousTo(lesson_M*PointToHomogeneous(original[j]));//screen coordinates
         }
      
         Vector3d normal=((original[0]-original[1]).cross(original[0]-original[2])).normalized();
@@ -107,17 +106,14 @@ int  main()
         if(intensity>0)
         {
         
-            triangle3D(perVertex[0],perVertex[1],perVertex[2],image, uvs,intensity,zBufferP,Mywidth,myModel->diffuseMap);
+            triangle3D(screen_coordinate[0],screen_coordinate[1],screen_coordinate[2],original,image, uvs,intensity,zBufferP,Mywidth,myModel->diffuseMap);
             //triangle3D(tempVertex[0],tempVertex[1],tempVertex[2],image, uvs,intensity,zBufferP,Mywidth,myModel->diffuseMap);
         }
     }
-
-    //cout<<"r "<<(int)myModel->diffuseMap.get(489,966).r<<" g "<<(int)myModel->diffuseMap.get(489,966).g<<" b "<<(int)myModel->diffuseMap.get(489,966).b<<endl;
     
 
-
     image.flip_vertically();  
-    image.write_tga_file("lesson4.tga");
+    image.write_tga_file("lesson4-2.tga");
    // image.write_tga_file("lesson3.tga");
     delete myModel;
     return 0;
