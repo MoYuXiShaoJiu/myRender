@@ -4,7 +4,7 @@
 #include"draw.h"
 #include"model.h"
 #include<limits.h>
-
+#include"shader.h"
 using namespace std;
 const TGAColor white = TGAColor(255, 255, 255, 255);
 const TGAColor red = TGAColor(255, 0, 0, 255);
@@ -84,29 +84,29 @@ int  main()
                      0,0,255/2,255/2,
                      0,0,0,1;
     lesson_M=lesson_viewport*lesson_porjective;
-    //vector<TGAColor> vertexColor;//三角形三个顶点的颜色
+
+    //从这里开始以下都用shder来操作
+    
+    shader myShader(original,lesson_M);
     for(int i=0;i<myModel->faceNumber();i++)//对每个三角形渲染
     {
         
         uvs.clear();
         temp=myModel->getTriangle(i);//取得序列
-        //vertexColor=myModel->getcolor(i);//所以问题出现在这里
         uvs=myModel->getUV(i);
-        //cout<<uvs[0][0]<<" "<<uvs[0][1]<<" "<<"\n"<<endl;
         for(int j=0;j<3;j++)
         {
-            tempVertex[j]=world2screen(myModel->getVertex(temp[j])) ;
+           //tempVertex[j]=world2screen(myModel->getVertex(temp[j])) ;
             original[j]=myModel->getVertex(temp[j]);//world coordinates
-            screen_coordinate[j]= HomogeneousTo(lesson_M*PointToHomogeneous(original[j]));//screen coordinates
+            //screen_coordinate[j]= HomogeneousTo(lesson_M*PointToHomogeneous(original[j]));//screen coordinates
         }
-     
+        myShader.setVertex(original);
         Vector3d normal=((original[0]-original[1]).cross(original[0]-original[2])).normalized();
         double intensity=normal.dot(light_dir);
-       
         if(intensity>0)
         {
-        
-            triangle3D(screen_coordinate[0],screen_coordinate[1],screen_coordinate[2],original,image, uvs,intensity,zBufferP,Mywidth,myModel->diffuseMap);
+            myShader.rasterize(image,myModel->diffuseMap,uvs,intensity,zBufferP);
+            //triangle3D(screen_coordinate[0],screen_coordinate[1],screen_coordinate[2],original,image, uvs,intensity,zBufferP,Mywidth,myModel->diffuseMap);
             //triangle3D(tempVertex[0],tempVertex[1],tempVertex[2],image, uvs,intensity,zBufferP,Mywidth,myModel->diffuseMap);
         }
     }

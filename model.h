@@ -21,7 +21,9 @@ class model
     
     
     public:
+
     TGAImage diffuseMap;//用来存储纹理本身
+
     model(const string fileName):vertexs(),faces(),textureN(),tex()//modle的构造函数，读入obj文件名
     {
         ifstream inputFile ;
@@ -201,6 +203,10 @@ class model
         }
         return result;
 
+    }
+    TGAImage getDiffuseMap()
+    {
+        return this->diffuseMap;
     }
 
 
