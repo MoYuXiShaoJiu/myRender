@@ -100,3 +100,25 @@ zBuffer是一个很常用也很好用搞懂算法
 结果如下：
 ![result5.png](result5.png)
 
+# shader
+rasterization是object-order rendering的核心，rasterizer是任何一个图形渲染管线的重心。
+对于每个被送进来的图元，rasterizer有两个职责：
+- 枚举所有被图元覆盖的像素
+- 插值
+rasterizer的输出是fragment，每个fragment对应一个像素以及一些这个像素的性质
+
+triangle函数是rasterizer
+将所有的数据输入一个shader中，shader输出结果
+
+重构了代码，将创建包围盒以及插值的任务交给了rasterizer函数，将计算颜色交给了fragment函数
+
+第一次重构时出现了以下结果：
+
+![result6.png](result6.png)
+
+显然这种问题是两个相邻的三角形的相邻边的渲染问题
+
+经检查是包围盒的创建时忽略了top和right的情况，修改之后得到以下结果：
+
+![result7.png](result7.png)
+
