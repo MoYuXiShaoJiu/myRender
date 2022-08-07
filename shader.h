@@ -14,6 +14,7 @@ class shader
     Matrix4d  trans_Matrix;//总的变换矩阵
     Vector3d  world_coordinates[3];//仅有一个物体的条件下,用来存放一个三角形
     Vector3d  screen_coordinates[3];
+    bool MSAA_bool=false;//默认不开启msaa
 
     public:
     shader(Vector3d world_cd[],Matrix4d trans)//其实本质是rasterizer
@@ -25,7 +26,18 @@ class shader
             screen_coordinates[i]=HomogeneousTo(trans*PointToHomogeneous(world_cd[i]));
         }
     }
-    void rasterize(TGAImage &image,TGAImage diffuseMap,vector<Vector2d> &uvs,double intensity,double* zBuffer)//进行渲染
+     shader(Vector3d world_cd[],Matrix4d trans,bool msaa)//其实本质是rasterizer
+    {
+        this->trans_Matrix=trans;
+        for(int i=0;i<3;i++)
+        {
+            world_coordinates[i]=world_cd[i];
+            screen_coordinates[i]=HomogeneousTo(trans*PointToHomogeneous(world_cd[i]));
+        }
+        MSAA_bool=msaa;
+    }
+    
+    void rasterize(TGAImage &image,TGAImage& diffuseMap,vector<Vector2d> &uvs,double intensity,double* zBuffer)//进行渲染
     {
         //求覆盖的像素
         //求插值
@@ -58,6 +70,10 @@ class shader
                         }
                         finalColor=fragment(u,v,diffuseMap,intensity);
                         zBuffer[i+j*image.get_width()]=tempz;
+                        if(this->MSAA_bool)//如果判断需要调用msaa抗锯齿
+                        {
+                            finalColor=MSAA(i,j,finalColor);
+                        }
                         image.set(i,j,finalColor);
                     }
                 }
@@ -81,6 +97,31 @@ class shader
     TGAColor fragment(double u,double v,TGAImage diffuse,double intensity)//给输入的图元返回颜色
     {
         return diffuse.get(u*diffuse.get_width(),v*diffuse.get_height())*intensity;
+    }
+
+    TGAColor MSAA(double i,double j,TGAColor& finalcolor)//使用一个bool值来控制是否使用MSAA，坐标就直接使用类内部的数据，这样就节约了时间
+    {
+        int valid_point_num,sample_point_num;
+        double xishu;
+        valid_point_num=0;
+        sample_point_num=4;
+        Vector3d temp;
+        TGAColor resultColor;
+        for(double x=0.25;x<=0.75;x+=0.5)//选择一个像素内的四个不同位置
+        {
+            for(double y=0.25;y<=0.75;y+=0.5)
+            {
+                temp=barycentric(screen_coordinates[0],screen_coordinates[1],screen_coordinates[2],i+x,j+y);
+                if(temp.x()>=0&&temp.x()<1&&temp.y()>=0&&temp.y()<1&&temp.z()>=0&&temp.z()<1)
+                {
+                    valid_point_num++;
+                }
+            }
+        }
+        xishu=(double)valid_point_num/(double)sample_point_num;
+        resultColor=finalcolor*xishu;
+        return resultColor;
+
     }
 
 

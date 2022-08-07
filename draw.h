@@ -10,7 +10,7 @@ using namespace Eigen;
 
 
 //bool InTriangle(vec2 v0,vec2 v1,vec2 v2,int x,int y);
-Vector3d barycentric(Vector3d v0,Vector3d v1, Vector3d v2,int  x,int  y)
+Vector3d barycentric(Vector3d v0,Vector3d v1, Vector3d v2,double  x,double  y)
 {
     //采用矩阵的解法，只需要解出alpha和beta就行
     //p是用来存放重心座标的
@@ -84,6 +84,7 @@ Vector4d vectorToHomogeneous(Vector3d temp)//将向量转换为齐次坐标
 }
 
 Vector3d HomogeneousTo(Vector4d temp)//将输入的齐次坐标转换为正常的坐标
+
 {
     return Vector3d(temp[0]/temp[3],temp[1]/temp[3],temp[2]/temp[3]);
 }

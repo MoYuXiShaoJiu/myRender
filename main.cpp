@@ -44,7 +44,7 @@ int  main()
 //    image.write_tga_file("output.tga");
 //    return 0;
 
-
+    bool MSAA_bool=true;
     Vector3d light_dir(0,0,1);
     myModel = new model("obj/african_head.obj");//打开文件
     double zBuffer[Mywidth][Myheight] ;//= {0};//其实这里应该是无限远的值
@@ -87,7 +87,7 @@ int  main()
 
     //从这里开始以下都用shder来操作
     
-    shader myShader(original,lesson_M);
+    shader myShader(original,lesson_M,MSAA_bool);
     for(int i=0;i<myModel->faceNumber();i++)//对每个三角形渲染
     {
         
@@ -113,7 +113,7 @@ int  main()
     
 
     image.flip_vertically();  
-    image.write_tga_file("lesson4-2.tga");
+    image.write_tga_file("msaa.tga");
    // image.write_tga_file("lesson3.tga");
     delete myModel;
     return 0;
