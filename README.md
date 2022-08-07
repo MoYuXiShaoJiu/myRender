@@ -121,4 +121,19 @@ triangle函数是rasterizer
 经检查是包围盒的创建时忽略了top和right的情况，修改之后得到以下结果：
 
 ![result7.png](result7.png)
+# MSAA
+将图片放大，我们能看到很明显的锯齿，这里采用MSAA的方法进行抗锯齿
+
+MSAA使用以下公式来处理颜色：pixel_color = center_color * valid_points_num / sample_points_num
+
+对于每一个像素，在该像素中取四个点，判定是否在三角形中，在三角想中的点的个数即为valid_points_num，而sample_points_num的个数则为固定的4.
+
+使用该公式得到以下的结果：
+![result8.png](result8.png)
+
+
+
+
+
+
 
