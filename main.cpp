@@ -5,6 +5,7 @@
 #include"model.h"
 #include<limits.h>
 #include"shader.h"
+#include<malloc.h>
 using namespace std;
 const TGAColor white = TGAColor(255, 255, 255, 255);
 const TGAColor red = TGAColor(255, 0, 0, 255);
@@ -48,14 +49,21 @@ int  main()
     Vector3d light_dir(0,0,1);
     myModel = new model("obj/african_head.obj");//打开文件
     double zBuffer[Mywidth][Myheight] ;//= {0};//其实这里应该是无限远的值
-    for(int i=0;i<Myheight;i++)
+    //double MSAA_Buffer[Mywidth][Myheight][4];
+    double* zBufferP=zBuffer[0];//zbuffer的指针
+    //不能使用这么大的数组，会溢出
+    double* MSAA_Buffer=(double*)malloc(sizeof(double)*Mywidth*Myheight*4);
+    for(int i=0;i<Mywidth;i++)
     {
-        for(int j=0;j<Mywidth;j++)
+        for(int j=0;j<Myheight;j++)
         {
             zBuffer[i][j]=-numeric_limits<double>::max();
+            for(int k=0;k<4;k++)
+            {
+                MSAA_Buffer[i*Myheight*4+j*4+k]=-numeric_limits<double>::max();//msaa深度的初始化
+            }
         }
     }
-    double* zBufferP=zBuffer[0];//zbuffer的指针
     TGAImage image(Mywidth, Myheight, TGAImage::RGB);//创建图
     vector<int> temp;//用来暂时存储点的次序
     Vector3d tempVertex[3];//用来暂时存储三个点
@@ -105,7 +113,15 @@ int  main()
         double intensity=normal.dot(light_dir);
         if(intensity>0)
         {
-            myShader.rasterize(image,myModel->diffuseMap,uvs,intensity,zBufferP);
+            if(MSAA_bool)
+            {
+                myShader.MSAA(image,myModel->diffuseMap,uvs,intensity,MSAA_Buffer);
+            }
+            else
+            {
+                myShader.rasterize(image,myModel->diffuseMap,uvs,intensity,zBufferP);
+            }
+            
             //triangle3D(screen_coordinate[0],screen_coordinate[1],screen_coordinate[2],original,image, uvs,intensity,zBufferP,Mywidth,myModel->diffuseMap);
             //triangle3D(tempVertex[0],tempVertex[1],tempVertex[2],image, uvs,intensity,zBufferP,Mywidth,myModel->diffuseMap);
         }
