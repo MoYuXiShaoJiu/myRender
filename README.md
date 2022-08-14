@@ -4,6 +4,8 @@
 参考了[这个](https://github.com/ssloy/tinyrenderer/wiki#tiny-renderer-or-how-opengl-works-software-rendering-in-500-lines-of-code)教程
 - 使用Eigen库而不是教程中的头文件
 - 使用了自己的model头文件来读取.obj文件
+- 手写了变换矩阵
+- 添加了MSAA
 
 ## 线
 线使用的算法其实并不难
@@ -133,6 +135,7 @@ MSAA使用以下公式来处理颜色：pixel_color = center_color * valid_point
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
 8.12 更新了shader的MSAA部分，但是只是让黑线的颜色变浅了，没有消除黑线
+8.15 需要添加一个framebuffer来暂存颜色，方便MSAA在最后处理颜色
 
 
 
