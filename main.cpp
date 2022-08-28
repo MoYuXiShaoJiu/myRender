@@ -45,14 +45,17 @@ int  main()
 //    image.write_tga_file("output.tga");
 //    return 0;
 
-    bool MSAA_bool=true;
+    bool MSAA_bool=false;
     Vector3d light_dir(0,0,1);
     myModel = new model("obj/african_head.obj");//打开文件
     double zBuffer[Mywidth][Myheight] ;//= {0};//其实这里应该是无限远的值
     //double MSAA_Buffer[Mywidth][Myheight][4];
     double* zBufferP=zBuffer[0];//zbuffer的指针
     //不能使用这么大的数组，会溢出
-    double* MSAA_Buffer=(double*)malloc(sizeof(double)*Mywidth*Myheight*4);
+    double* MSAA_Buffer=(double*)malloc(sizeof(double)*Mywidth*Myheight*4);//这里应该用来存储是否在三角形内，
+    //如果在三角形内，就将该点的值置为1
+    //如果不在三角形内，就将该点置为0
+    bool* pixel_in=(bool*)malloc(sizeof(bool)*Myheight*Mywidth);//这个用来存储所有的子采样点是否在三角形内
     for(int i=0;i<Mywidth;i++)
     {
         for(int j=0;j<Myheight;j++)
@@ -113,14 +116,17 @@ int  main()
         double intensity=normal.dot(light_dir);
         if(intensity>0)
         {
+           
             if(MSAA_bool)
             {
-                myShader.MSAA(image,myModel->diffuseMap,uvs,intensity,MSAA_Buffer);
+                myShader.rasterize(image,myModel->diffuseMap,uvs,intensity,zBufferP,MSAA_Buffer,pixel_in);
+                myShader.doMSAA(image,pixel_in);
             }
             else
             {
-                myShader.rasterize(image,myModel->diffuseMap,uvs,intensity,zBufferP);
+                 myShader.rasterize(image,myModel->diffuseMap,uvs,intensity,zBufferP);
             }
+            
             
             //triangle3D(screen_coordinate[0],screen_coordinate[1],screen_coordinate[2],original,image, uvs,intensity,zBufferP,Mywidth,myModel->diffuseMap);
             //triangle3D(tempVertex[0],tempVertex[1],tempVertex[2],image, uvs,intensity,zBufferP,Mywidth,myModel->diffuseMap);

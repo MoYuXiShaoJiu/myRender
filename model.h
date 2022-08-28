@@ -18,6 +18,8 @@ class model
     vector<vector<int>> faces;//点的连接的vector
     vector<Vector3i> textureN;//用来存储纹理序列
     vector<Vector2d> tex;//用来存储纹理矩阵
+    vector<Vector2i> noramlNum;//用来存储法向量索引
+    vector<Vector3d> normal;//用来存储法向量本身
     
     
     public:
