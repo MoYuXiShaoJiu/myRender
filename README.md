@@ -13,8 +13,8 @@
 
 如果我们拿这个项目和opengl去对比的话，本项目最大的问题在我看来是没有把分离做好。
 
-*opengl中的vertex shader，fragment shader的分离做的很彻底，但是在本项目的shader.cpp文件中我们能看到其实这里的功能分离做的并不好。
-这是我在写shadow map的时候尝试去复用rasterizer的时候的最大的感受，如果能把这部分功能的分离做好，完成shadow map会简单很多，这是值得反思的一点*
+**opengl中的vertex shader，fragment shader的分离做的很彻底，但是在本项目的shader.cpp文件中我们能看到其实这里的功能分离做的并不好。
+这是我在写shadow map的时候尝试去复用rasterizer的时候的最大的感受，如果能把这部分功能的分离做好，完成shadow map会简单很多，这是值得反思的一点**
 
 希望能通过代码的重构解决。
 
