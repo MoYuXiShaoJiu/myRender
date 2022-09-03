@@ -6,6 +6,7 @@
 #include"tgaimage.h"
 #include"eigen3/Eigen/Dense"
 #include"draw.h"
+#include"vertexShader.h"
 using namespace Eigen;
 //对输出的图元进行处理输出fragment
 class shader
@@ -15,6 +16,7 @@ class shader
     Vector3d  world_coordinates[3];//仅有一个物体的条件下,用来存放一个三角形
     Vector3d  screen_coordinates[3];
     bool MSAA_bool=false;//默认不开启msaa
+    
 
     public:
     shader(Vector3d world_cd[],Matrix4d trans)//其实本质是rasterizer
@@ -33,6 +35,16 @@ class shader
         {
             world_coordinates[i]=world_cd[i];
             screen_coordinates[i]=HomogeneousTo(trans*PointToHomogeneous(world_cd[i]));
+        }
+        MSAA_bool=msaa;
+    }
+    shader(Vector3d world_cd[],vertexShader&  vertex_shader,bool msaa)
+    {
+        this->trans_Matrix=vertex_shader.getTransMatrix();
+         for(int i=0;i<3;i++)
+        {
+            world_coordinates[i]=world_cd[i];
+            screen_coordinates[i]=vertex_shader.TransVertex(screen_coordinates[i]);
         }
         MSAA_bool=msaa;
     }

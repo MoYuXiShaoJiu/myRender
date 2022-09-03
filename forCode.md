@@ -1,0 +1,7 @@
+# 关于重构代码
+这里重构代码主要是要把shader给拆开来，点的处理交给vertexshader来
+
+关于覆盖的处理单独的交给rasterizer，颜色交给fragmentshader，这样在写shadowmappig的时候的复用会变得简单一点
+
+
+

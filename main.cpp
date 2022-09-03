@@ -6,6 +6,7 @@
 #include<limits.h>
 #include"shader.h"
 #include<malloc.h>
+#include"vertexShader.h"
 using namespace std;
 const TGAColor white = TGAColor(255, 255, 255, 255);
 const TGAColor red = TGAColor(255, 0, 0, 255);
@@ -97,8 +98,10 @@ int  main()
     lesson_M=lesson_viewport*lesson_porjective;
 
     //从这里开始以下都用shder来操作
-    
-    shader myShader(original,lesson_M,MSAA_bool);
+    vertexShader vertex_shader(Mywidth,Myheight,camera,eye_position,gaze,t);
+    //shader myShader(original,lesson_M,MSAA_bool);
+    shader myShader(original,vertex_shader,MSAA_bool);
+
     for(int i=0;i<myModel->faceNumber();i++)//对每个三角形渲染
     {
         
@@ -135,7 +138,7 @@ int  main()
     
 
     image.flip_vertically();  
-    image.write_tga_file("msaa.tga");
+    image.write_tga_file("vertex.tga");
    // image.write_tga_file("lesson3.tga");
     delete myModel;
     return 0;
