@@ -100,7 +100,7 @@ int  main()
     //从这里开始以下都用shder来操作
     vertexShader vertex_shader(Mywidth,Myheight,camera,eye_position,gaze,t);
     //shader myShader(original,lesson_M,MSAA_bool);
-    shader myShader(original,vertex_shader,MSAA_bool);
+    shader myShader(original,vertex_shader,MSAA_bool,image);
 
     for(int i=0;i<myModel->faceNumber();i++)//对每个三角形渲染
     {

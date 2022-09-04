@@ -16,7 +16,8 @@ class shader
     Vector3d  world_coordinates[3];//仅有一个物体的条件下,用来存放一个三角形
     Vector3d  screen_coordinates[3];
     bool MSAA_bool=false;//默认不开启msaa
-    
+    //一个用来存放纹理的空间
+    pair<double,double> * texture_buffer=nullptr;    
 
     public:
     shader(Vector3d world_cd[],Matrix4d trans)//其实本质是rasterizer
@@ -28,7 +29,7 @@ class shader
             screen_coordinates[i]=HomogeneousTo(trans*PointToHomogeneous(world_cd[i]));
         }
     }
-     shader(Vector3d world_cd[],Matrix4d trans,bool msaa)//其实本质是rasterizer
+    shader(Vector3d world_cd[],Matrix4d trans,bool msaa)//其实本质是rasterizer
     {
         this->trans_Matrix=trans;
         for(int i=0;i<3;i++)
@@ -38,7 +39,7 @@ class shader
         }
         MSAA_bool=msaa;
     }
-    shader(Vector3d world_cd[],vertexShader&  vertex_shader,bool msaa)
+    shader(Vector3d world_cd[],vertexShader&  vertex_shader,bool msaa,TGAImage& image)
     {
         this->trans_Matrix=vertex_shader.getTransMatrix();
          for(int i=0;i<3;i++)
@@ -47,6 +48,11 @@ class shader
             screen_coordinates[i]=vertex_shader.TransVertex(screen_coordinates[i]);
         }
         MSAA_bool=msaa;
+        texture_buffer=(pair<double,double>*)malloc(sizeof(pair<double,double>)*image.get_height()*image.get_width());
+        if(texture_buffer==nullptr)//如果申请内存失败
+        {
+            cout<<"malloc texture_buffer failed"<<endl;
+        }
     }
     
     void rasterize(TGAImage &image,TGAImage& diffuseMap,vector<Vector2d> &uvs,double intensity,double* zBuffer)//进行渲染
@@ -155,7 +161,7 @@ class shader
         return diffuse.get(u*diffuse.get_width(),v*diffuse.get_height())*intensity;
     }
 
- void MSAA(int i,int j,double* MSAA_Buffer,bool* pixel,int I_width,int I_heigh)//MSAA_Buffer用来计算子像素点的深度置，pixel用来记录是子像素点是否在三角形内
+    void MSAA(int i,int j,double* MSAA_Buffer,bool* pixel,int I_width,int I_heigh)//MSAA_Buffer用来计算子像素点的深度置，pixel用来记录是子像素点是否在三角形内
     {
        Vector2d location[4];
        location[0]=Vector2d(0.25,0.25);
@@ -186,7 +192,7 @@ class shader
 
     }
 
-void doMSAA(TGAImage &image,bool* pixel)//对image进行处理
+    void doMSAA(TGAImage &image,bool* pixel)//对image进行处理
 {
     int tempWidth=image.get_width();
     int tempHeigh=image.get_height();
