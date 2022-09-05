@@ -7,6 +7,7 @@
 #include"eigen3/Eigen/Dense"
 #include"draw.h"
 #include"vertexShader.h"
+
 using namespace Eigen;
 //对输出的图元进行处理输出fragment
 class shader
@@ -18,7 +19,7 @@ class shader
     bool MSAA_bool=false;//默认不开启msaa
     //一个用来存放纹理的空间
     pair<double,double> * texture_buffer=nullptr;    
-
+    
     public:
     shader(Vector3d world_cd[],Matrix4d trans)//其实本质是rasterizer
     {
@@ -216,6 +217,10 @@ class shader
     }
 }
 
+    void do_rasterize()
+    {
+        
+    }
 
 
 

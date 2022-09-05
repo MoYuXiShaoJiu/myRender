@@ -28,8 +28,11 @@ shader(vertexShader,rasterizer,fragment,data)
 ```
 在sahder中创建一个rasterizer的对象，用来处理创建包围盒还有插值
 
+## fragmen shader
+其实rasterizer还没有测试，但是我觉得单独使用的话测试也比较麻烦，而且fragment shader应该还蛮好写的
 
-- 9.3 vertex shader分离成功
+
+
 
 
 

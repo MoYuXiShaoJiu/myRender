@@ -7,6 +7,8 @@
 #include"shader.h"
 #include<malloc.h>
 #include"vertexShader.h"
+#include"rasterizre.h"
+#include"fragmentShader.h"
 using namespace std;
 const TGAColor white = TGAColor(255, 255, 255, 255);
 const TGAColor red = TGAColor(255, 0, 0, 255);
@@ -99,8 +101,10 @@ int  main()
 
     //从这里开始以下都用shder来操作
     vertexShader vertex_shader(Mywidth,Myheight,camera,eye_position,gaze,t);
+    rasterizer my_rasterizer(image);
     //shader myShader(original,lesson_M,MSAA_bool);
     shader myShader(original,vertex_shader,MSAA_bool,image);
+    
 
     for(int i=0;i<myModel->faceNumber();i++)//对每个三角形渲染
     {

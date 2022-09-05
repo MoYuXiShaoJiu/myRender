@@ -49,10 +49,14 @@ class rasterizer
                             v+=uvs[k][1]*p[k];
                         }
                         
-                        zBuffer[i+j*Image_width]=tempz;
+                        zBuffer[i+j*Image_width]=tempz;//更新了zbuffer
                         texture_buffer[i+j*Image_width].first=u;//将结果记录进纹理buffer
                         texture_buffer[i+j*Image_width].second=v;
                       
+                    }
+                    else//如果没有满足深度条件
+                    {
+                        
                     }
                 }
 
