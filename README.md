@@ -8,6 +8,7 @@
 - 添加了MSAA，但有一点小问题
 - 实现shadow map中
 - 分离了vertex sahder，rasterizer
+- 在fragmentshader，rasterizer和shader的关系处理上遇到了一点问题
 
 ## 问题
 其实这个项目所做的是在一步一步的实现opengl的部分功能，当然并没有那么强大。
