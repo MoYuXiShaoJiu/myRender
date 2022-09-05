@@ -8,7 +8,8 @@
 - 添加了MSAA，但有一点小问题
 - 实现shadow map中
 - 分离了vertex sahder，rasterizer
-- 在fragmentshader，rasterizer和shader的关系处理上遇到了一点问题
+- 在fragmentshader，rasterizer和shader的关系处理上遇到了一点问题，主要的问题是intensity的处理，以及模拟gpu上的工作流程
+- 分离之后出现了结果上的错误
 
 ## 问题
 其实这个项目所做的是在一步一步的实现opengl的部分功能，当然并没有那么强大。
@@ -146,6 +147,10 @@ MSAA使用以下公式来处理颜色：pixel_color = center_color * valid_point
 
 使用该公式得到以下的结果：
 ![result8.png](result8.png)
+
+# shader分离
+![result9.png](result9.png)
+如图，分离之后的结果出现了问题
 
 
 
