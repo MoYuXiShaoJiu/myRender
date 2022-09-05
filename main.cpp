@@ -59,11 +59,14 @@ int  main()
     //如果在三角形内，就将该点的值置为1
     //如果不在三角形内，就将该点置为0
     bool* pixel_in=(bool*)malloc(sizeof(bool)*Myheight*Mywidth);//这个用来存储所有的子采样点是否在三角形内
+    pair<double,double> * texture_buffer=(pair<double,double>*)malloc(sizeof(pair<double,double>)*Myheight*Mywidth);//纹理坐标
+    double * intensityArray=(double *)malloc(sizeof(double)*Myheight*Mywidth);
     for(int i=0;i<Mywidth;i++)
     {
         for(int j=0;j<Myheight;j++)
         {
             zBuffer[i][j]=-numeric_limits<double>::max();
+            intensityArray[i*Mywidth+j]=0.0;
             for(int k=0;k<4;k++)
             {
                 MSAA_Buffer[i*Myheight*4+j*4+k]=-numeric_limits<double>::max();//msaa深度的初始化
@@ -74,6 +77,7 @@ int  main()
     vector<int> temp;//用来暂时存储点的次序
     Vector3d tempVertex[3];//用来暂时存储三个点
     Vector3d screen_coordinate[3];
+    Vector3d world_coordinate[3];
     Vector3d original[3];
     vector<Vector2d> uvs;
 
@@ -104,6 +108,7 @@ int  main()
     rasterizer my_rasterizer(image);
     //shader myShader(original,lesson_M,MSAA_bool);
     shader myShader(original,vertex_shader,MSAA_bool,image);
+    fragmentShader my_fragment_shader(myShader.get_tex_buffer_pointer(),zBufferP);
     
 
     for(int i=0;i<myModel->faceNumber();i++)//对每个三角形渲染
@@ -115,30 +120,33 @@ int  main()
         for(int j=0;j<3;j++)
         {
            //tempVertex[j]=world2screen(myModel->getVertex(temp[j])) ;
-            original[j]=myModel->getVertex(temp[j]);//world coordinates
+            world_coordinate[j]=myModel->getVertex(temp[j]);//world coordinates
             //screen_coordinate[j]= HomogeneousTo(lesson_M*PointToHomogeneous(original[j]));//screen coordinates
+            screen_coordinate[j]=vertex_shader.TransVertex(world_coordinate[j]);
         }
-        myShader.setVertex(original);
-        Vector3d normal=((original[0]-original[1]).cross(original[0]-original[2])).normalized();
+        //myShader.setVertex(original);
+        Vector3d normal=((world_coordinate[0]-world_coordinate[1]).cross(world_coordinate[0]-world_coordinate[2])).normalized();
         double intensity=normal.dot(light_dir);
         if(intensity>0)
         {
-           
-            if(MSAA_bool)
-            {
-                myShader.rasterize(image,myModel->diffuseMap,uvs,intensity,zBufferP,MSAA_Buffer,pixel_in);
-                myShader.doMSAA(image,pixel_in);
-            }
-            else
-            {
-                 myShader.rasterize(image,myModel->diffuseMap,uvs,intensity,zBufferP);
-            }
+            my_rasterizer.do_rasterize(image,world_coordinate,screen_coordinate,zBufferP,uvs,texture_buffer,intensityArray,intensity);
+
+            // if(MSAA_bool)
+            // {
+            //     myShader.rasterize(image,myModel->diffuseMap,uvs,intensity,zBufferP,MSAA_Buffer,pixel_in);
+            //     myShader.doMSAA(image,pixel_in);
+            // }
+            // else
+            // {
+            //      myShader.rasterize(image,myModel->diffuseMap,uvs,intensity,zBufferP);
+            // }
             
             
             //triangle3D(screen_coordinate[0],screen_coordinate[1],screen_coordinate[2],original,image, uvs,intensity,zBufferP,Mywidth,myModel->diffuseMap);
             //triangle3D(tempVertex[0],tempVertex[1],tempVertex[2],image, uvs,intensity,zBufferP,Mywidth,myModel->diffuseMap);
         }
     }
+    my_fragment_shader.using_fragment_shader(image,myModel->diffuseMap,intensityArray);
     
 
     image.flip_vertically();  

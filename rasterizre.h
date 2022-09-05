@@ -11,6 +11,7 @@ class rasterizer
     int left,right,top,bottom,Image_width;
     double u,v;
     Vector3d p,wd_bc;
+
     public:
     //需要实现的功能是包围盒和插值
     //再加上深度检查
@@ -21,7 +22,13 @@ class rasterizer
         this->Image_width=image.get_width();
     }
 
-    void do_rasterize(TGAImage& image,Vector3d world_coordinates[],Vector3d screen_coordinates[],double *zBuffer,vector<Vector2d>&uvs,pair<double,double>* texture_buffer)
+    void set_Image_width(TGAImage &image)
+    {
+        this->Image_width=image.get_width();
+    }
+
+
+    void do_rasterize(TGAImage& image,Vector3d world_coordinates[],Vector3d screen_coordinates[],double *zBuffer,vector<Vector2d>&uvs,pair<double,double>* texture_buffer,double* intensityArray,double intensity)
     {
         //求包围盒
         left=max(0.0,min(screen_coordinates[0].x(),min(screen_coordinates[1].x(),screen_coordinates[2].x())));
@@ -33,6 +40,7 @@ class rasterizer
         {
             for(int j=bottom;j<=top;j++)
             {
+                intensityArray[i+j*Image_width]=intensity;
                 p=barycentric(screen_coordinates[0],screen_coordinates[1],screen_coordinates[2],i,j);
                 wd_bc=Vector3d(p.x()/world_coordinates[0][2],p.y()/world_coordinates[1][2],p.z()/world_coordinates[2].z());
                 wd_bc=wd_bc/(wd_bc.x()+wd_bc.y()+wd_bc.z());//求得原来的重心坐标
@@ -56,7 +64,8 @@ class rasterizer
                     }
                     else//如果没有满足深度条件
                     {
-                        
+                        texture_buffer[i+j*Image_width].first=0.0;//将结果记录进纹理buffer
+                        texture_buffer[i+j*Image_width].second=0.0;   
                     }
                 }
 

@@ -7,7 +7,8 @@
 #include"eigen3/Eigen/Dense"
 #include"draw.h"
 #include"vertexShader.h"
-
+#include"rasterizre.h"
+#include"fragmentShader.h"
 using namespace Eigen;
 //对输出的图元进行处理输出fragment
 class shader
@@ -18,7 +19,7 @@ class shader
     Vector3d  screen_coordinates[3];
     bool MSAA_bool=false;//默认不开启msaa
     //一个用来存放纹理的空间
-    pair<double,double> * texture_buffer=nullptr;    
+    pair<double,double> * texture_buffer=nullptr;
     
     public:
     shader(Vector3d world_cd[],Matrix4d trans)//其实本质是rasterizer
@@ -54,8 +55,15 @@ class shader
         {
             cout<<"malloc texture_buffer failed"<<endl;
         }
+        
     }
     
+    pair<double,double>* get_tex_buffer_pointer()
+    {
+        return this->texture_buffer;
+    }
+
+
     void rasterize(TGAImage &image,TGAImage& diffuseMap,vector<Vector2d> &uvs,double intensity,double* zBuffer)//进行渲染
     {
         //求覆盖的像素
@@ -217,10 +225,12 @@ class shader
     }
 }
 
-    void do_rasterize()
-    {
+    // void do_rasterize(TGAImage image ,rasterizer myRasterizer,fragmentShader myFragmentShader,double * zbuffer_pointer,vector<Vector2d>&uvs)//替代上面的rasterizer的作用，这里已经处理了点
+    // {
+    //     myRasterizer.do_rasterize(image,this->world_coordinates,this->screen_coordinates,zbuffer_pointer,uvs,this->texture_buffer);
         
-    }
+
+    // };
 
 
 

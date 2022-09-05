@@ -29,7 +29,7 @@ class fragmentShader
     }
 
     //处理函数
-    void using_fragment_shader(TGAImage &image,TGAImage& diffuseMap,double intensity)
+    void using_fragment_shader(TGAImage &image,TGAImage& diffuseMap,double* intensityA)
     {
         if(this->tex_buffer_pointer==nullptr)
         {
@@ -54,7 +54,7 @@ class fragmentShader
             for(int j=0;j<image_heigh;j++)
             {
                 finalcolor=diffuseMap.get(tex_buffer_pointer[i+j*image_width].first*diffuseMap.get_width(),tex_buffer_pointer[i+j*image_width].second*diffuseMap.get_height());
-                finalcolor=finalcolor*intensity;
+                finalcolor=finalcolor*intensityA[i+j*image_width];
                 image.set(i,j,finalcolor);
             }
         }
