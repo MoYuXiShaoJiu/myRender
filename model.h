@@ -18,7 +18,7 @@ class model
     vector<vector<int>> faces;//点的连接的vector
     vector<Vector3i> textureN;//用来存储纹理序列
     vector<Vector2d> tex;//用来存储纹理矩阵
-    vector<Vector2i> noramlNum;//用来存储法向量索引
+    vector<Vector3i> noramlNum;//用来存储法向量索引
     vector<Vector3d> normal;//用来存储法向量本身
     
     
@@ -66,14 +66,17 @@ class model
                 iss>>trash;//同样是先把不需要的字母处理掉
                 vector<int> f;
                 Vector3i t;
-                int itrash,idx,Mytex;
+                Vector3i norNum;
+                int itrash,idx,Mytex,MyNormal;
                 int k=0;
-                while(iss>>idx>>trash>>Mytex>>trash>>itrash)//看一下obj文件中f开头的行就明白了，中间有/要处理，而且形成三角形的三个点也不是连在一起的
+                while(iss>>idx>>trash>>Mytex>>trash>>MyNormal)//看一下obj文件中f开头的行就明白了，中间有/要处理，而且形成三角形的三个点也不是连在一起的
                 {
                     idx--;
                     Mytex--;
+                    MyNormal--;
                     f.push_back(idx);
                     t[k]=Mytex;
+                    norNum[k]=MyNormal;//存储向量序列
                     k++;
                    
                 }
@@ -81,6 +84,7 @@ class model
                 //将这个三角形加入序列中
                 this->faces.push_back(f);
                 this->textureN.push_back(t);//将纹理加入tex列表
+                this->noramlNum.push_back(norNum);//将向量顺序加入列表
             }
 
              else if(!line.compare(0,3,"vt "))//比较是没有问题的
@@ -93,12 +97,20 @@ class model
                 tex.push_back(temp);
                 
              }
+             else if(!line.compare(0,3,"vn "))
+             {
+                iss>>trash>>trash;//处理掉vn
+                double normal1,normal2,normal3;
+                iss>>normal1>>normal2>>normal3;
+                Vector3d tempNormal(normal1,normal2,normal3);
+                normal.push_back(tempNormal);
+             }
 
             
         
         }
         
-         std::cerr << "# v# " << vertexs.size() << " f# "  << faces.size() << std::endl;
+         std::cerr << "# v# " << vertexs.size() << " f# "  << faces.size() << "vn #"<<noramlNum.size()<<std::endl;
          cerr<<"# vt#" <<tex.size()<<endl;//检查没有问题
          loadDiffuseTex(fileName,"_diffuse.tga",diffuseMap);
          inputFile.close();
@@ -145,6 +157,27 @@ class model
     Vector3i getTexOrder(int n)
     {
         return this->textureN[n];
+    }
+    //获取指定向量序列
+    Vector3i getNormalOrder(int n)
+    {
+        return this->noramlNum[n];
+    }
+    //获取指定向量
+    Vector3d getNormal(int n)
+    {
+        return this->normal[n];
+    }
+    vector<Vector3d> get_Normals(int n)
+    {
+        Vector3i num;
+        num=getNormalOrder(n);
+        vector<Vector3d> tempNormal;
+        for(int i=0;i<3;i++)
+        {
+            tempNormal.push_back(this->getNormal(num[i]));
+        }   
+        return tempNormal;
     }
     //读入纹理
     void loadDiffuseTex(string filename,string suffix,TGAImage &img)

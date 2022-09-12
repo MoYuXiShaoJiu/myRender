@@ -97,6 +97,7 @@ class shader
                             v+=uvs[k][1]*p[k];
                         }
                         finalColor=fragment(u,v,diffuseMap,intensity);
+                        //finalColor=fragment(intensity);
                         zBuffer[i+j*I_width]=tempz;
                         image.set(i,j,finalColor);
                     }
@@ -154,6 +155,60 @@ class shader
         }
 
     }
+    void rasterize(TGAImage &image,TGAImage& diffuseMap,vector<Vector2d>& uvs,vector<Vector3d>& normals,Vector3d lightSource,double* zBuffer)
+    {
+         //求覆盖的像素
+        //求插值
+        int left,right,top,bottom,I_width;//构造包围盒
+        left=max(0.0,min(screen_coordinates[0].x(),min(screen_coordinates[1].x(),screen_coordinates[2].x())));
+        right=min((double)image.get_width(),max(screen_coordinates[0].x(),max(screen_coordinates[1].x(),screen_coordinates[2].x())));
+        top=min((double)image.get_height(),max(screen_coordinates[0].y(),max(screen_coordinates[1].y(),screen_coordinates[2].y())));
+        bottom=max(0.0,min(screen_coordinates[0].y(),min(screen_coordinates[1].y(),screen_coordinates[2].y())));
+        double u,v;
+        Vector3d p,wd_bc,vertex_intensity;
+        TGAColor finalColor;
+        I_width=image.get_width();
+        //计算每个点的intensity贡献
+        for(int s=0;s<3;s++)
+        {
+            vertex_intensity[s]=max(normals[s].dot(lightSource),0.0);
+        }
+
+        for(int i=left;i<=right;i++)
+        {
+            for(int j=bottom;j<=top;j++)
+            {
+                p=barycentric(screen_coordinates[0],screen_coordinates[1],screen_coordinates[2],i,j);
+                wd_bc=Vector3d(p.x()/world_coordinates[0][2],p.y()/world_coordinates[1][2],p.z()/world_coordinates[2].z());
+                wd_bc=wd_bc/(wd_bc.x()+wd_bc.y()+wd_bc.z());//求得原来的重心坐标
+                if(p.x()<1&&p.x()>=0&&p.y()<=1&&p.y()>=0&&p.z()<=1&&p.z()>=0)//如果在三角形内
+                {
+                    double tempz=wd_bc.x()*world_coordinates[0].z()+wd_bc.y()*world_coordinates[1].z()+wd_bc.z()*world_coordinates[2].z();
+                    if(tempz>zBuffer[i+ j*image.get_width()])//如果满足深度条件
+                    {
+                        u=0.0;
+                        v=0.0;
+                        for(int k=0;k<3;k++)
+                        {
+                            u+=uvs[k][0]*p[k];
+                            v+=uvs[k][1]*p[k];
+                        }
+                        //finalColor=fragment(u,v,diffuseMap,intensity);
+                        //finalColor=fragment(intensity);
+                        finalColor=fragment(u,v,p,vertex_intensity,diffuseMap);
+                        zBuffer[i+j*I_width]=tempz;
+                        image.set(i,j,finalColor);
+                    }
+                }
+
+            }
+            
+        }
+
+    }
+
+
+
 
     void setVertex(Vector3d world_cd[])//更改当前shader中输出的图元
     {
@@ -167,6 +222,37 @@ class shader
 
     TGAColor fragment(double u,double v,TGAImage diffuse,double intensity)//给输入的图元返回颜色
     {
+        return diffuse.get(u*diffuse.get_width(),v*diffuse.get_height())*intensity;
+    }
+    TGAColor fragment(double intensity)//一个尝试
+    {
+        double tempIntensity;
+        if(intensity>0.85)
+        {
+            tempIntensity=1.0;
+        }
+        else if(intensity>0.65)
+        {
+            tempIntensity=0.8;
+
+        }
+        else if(intensity>0.45)
+        {
+            tempIntensity=0.6;
+        }
+        else if(intensity>0.25)
+        {
+            tempIntensity=0.4;
+        }
+        else 
+        {
+            tempIntensity=0;
+        }
+        return TGAColor(255,155,0)*tempIntensity;
+    }
+    TGAColor fragment(double u,double v,Vector3d p,Vector3d& vertex_intensity,TGAImage& diffuse)
+    {
+        double intensity=p.dot(vertex_intensity);
         return diffuse.get(u*diffuse.get_width(),v*diffuse.get_height())*intensity;
     }
 

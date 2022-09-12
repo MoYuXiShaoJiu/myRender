@@ -10,7 +10,7 @@ class vertexShader
     int image_width,image_heigh;
     public:
     //构造vertexShader
-    vertexShader(int width,int heigh,Vector3d cameraPosition,Vector3d eye_position,Vector3d gaze,Vector3d t)
+    vertexShader(int width,int heigh,Vector3d eye_position,Vector3d gaze,Vector3d t)
     {
         this->image_heigh=heigh;
         this->image_width=width;

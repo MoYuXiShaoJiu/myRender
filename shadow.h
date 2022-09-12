@@ -1,43 +1,29 @@
-// #pragma once
-// #include"shader.h"
-// #include<eigen3/Eigen/Dense>
-// using namespace Eigen;
-// //用来解决shadow mapping的事
-// //这里负责第一趟
-// //还有后面的处理问题
-// //可以重载fragment函数，达到效果
-// //重写一个shadow的类来重写其中的fragment函数达到完成阴影的效果
-// class ShadowRender:public shader
-// {
-//     private :
-//     //相机所在位置
-//     Vector3d Camera_Position;
-//     int Image_Width,Image_Heigh;
-//     double* shadowBuffer;
-// //******************************* 构建shadow
-//     void creatShadowBuffer()
-//     {
+//就暂且不管rasterizer的复用了，直接写shadow map
+#pragma once
+#include"eigen3/Eigen/Dense"
+using namespace Eigen;
 
-//     }
-// //*************************************************
+class shadow
+{
+    private:
+    int width,height;//用来存储图像的长宽
+    Vector3d lightSource;//用来存储光源的朝向
+    double * shadowBuffer=nullptr;//用来存储malloc的大小,但是还是放在外面比较好
 
+    public:
+    shadow(int width,int height,Vector3d light_souce,double * shadowBuffer)//构造函数
+    {
+        this->width=width;
+        this->height=height;
+        this->lightSource=light_souce;
+        this->shadowBuffer=shadowBuffer;
+    }
 
-//     public:
-
+    void do_shadow_mapping()//进行shadow mapping，产出shadow map
+    {
+        
+    }
     
-//     ShadowRender(Vector3d camera_position,int image_width,int image_heigh)
-//     {
-//         this->Camera_Position=camera_position;// 将传进来位置存储起来
-//         this->Image_Heigh=image_heigh;
-//         this->Image_Width=image_width;
-//         creatShadowBuffer();//构造一个shaodowBuffer
-
-//     }   
-// };
 
 
-
-
-
-
-
+};

@@ -32,22 +32,6 @@ int  main()
     z轴垂直屏幕平面，无限远处为0，z轴正方向垂直平面向里，即-x.corss(y)
     */
 
-
-//    TGAImage image(width,height,TGAImage::RGB);
-//    //相邻且z相同的两个三角形
-//     Vector3d v0(400,100,100);
-//     Vector3d v1(400,500,100);
-//     Vector3d v2(100,250,200);
-//     Vector3d v3(600,300,100);
-
-//    int zBuffer[width][height] = {0};//其实这里应该是无限远的值
-//    int* zBufferP=&zBuffer[0][0];//zbuffer的指针
-//    triangle3D(v0,v1,v2,image,red,zBufferP,width);
-//    triangle3D(v1,v0,v3,image,white,zBufferP,width);
-//    //image.flip_vertically();
-//    image.write_tga_file("output.tga");
-//    return 0;
-
     bool MSAA_bool=false;
     Vector3d light_dir(0,0,1);
     myModel = new model("obj/african_head.obj");//打开文件
@@ -61,6 +45,11 @@ int  main()
     bool* pixel_in=(bool*)malloc(sizeof(bool)*Myheight*Mywidth);//这个用来存储所有的子采样点是否在三角形内
     pair<double,double> * texture_buffer=(pair<double,double>*)malloc(sizeof(pair<double,double>)*Myheight*Mywidth);//纹理坐标
     double * intensityArray=(double *)malloc(sizeof(double)*Myheight*Mywidth);
+    double * shadowBuffer=(double *)malloc(sizeof(double)*Myheight*Mywidth);//shadow map
+    if(shadowBuffer==nullptr)
+    {
+        cout<<"申请空间失败"<<endl;
+    }
     for(int i=0;i<Mywidth;i++)
     {
         for(int j=0;j<Myheight;j++)
@@ -80,7 +69,7 @@ int  main()
     Vector3d world_coordinate[3];
     Vector3d original[3];
     vector<Vector2d> uvs;
-
+    vector<Vector3d> normals;
     Vector3d camera(0,0,3);//相机位置
     Matrix4d projectiveM,CameraMatrix,MViewP,M;
     Vector3d eye_position(0,0,3);//相机位置
@@ -91,32 +80,35 @@ int  main()
     MViewP=Mvp(800,800);//Viewport
     M=MViewP*projectiveM;
 
-
-    Matrix4d lesson_viewport,lesson_porjective,lesson_M;
-    lesson_porjective<<1,0,0,0,
-                       0,1,0,0,
-                       0,0,1,0,
-                       0,0,-1.0/3.0,1;
-    lesson_viewport<<Mywidth/8*3,0,0,Mywidth/2,
-                     0,Myheight/8*3,0,Myheight/2,
-                     0,0,255/2,255/2,
-                     0,0,0,1;
-    lesson_M=lesson_viewport*lesson_porjective;
-
     //从这里开始以下都用shder来操作
-    vertexShader vertex_shader(Mywidth,Myheight,camera,eye_position,gaze,t);
-    rasterizer my_rasterizer(image);
+    vertexShader vertex_shader(Mywidth,Myheight,eye_position,gaze,t);
+    //vertexShader shadow_vertex_shader(Mywidth,Myheight,)
+    //rasterizer my_rasterizer(image);
     //shader myShader(original,lesson_M,MSAA_bool);
     shader myShader(original,vertex_shader,MSAA_bool,image);
-    fragmentShader my_fragment_shader(myShader.get_tex_buffer_pointer(),zBufferP);
+    //fragmentShader my_fragment_shader(myShader.get_tex_buffer_pointer(),zBufferP);
     
+
+    //第一遍shadow
+    // for(int i=0;i<myModel->faceNumber();i++)
+    // {
+    //     temp=myModel->getTriangle(i);
+    //     for(int j=0;j<3;j++)
+    //     {
+    //         world_coordinate[j]=myModel->getVertex(temp[j]);
+    //         screen_coordinate[j]=vertex_shader.TransVertex(world_coordinate[j]);
+
+    //     }
+    // }
 
     for(int i=0;i<myModel->faceNumber();i++)//对每个三角形渲染
     {
         
         uvs.clear();
+        normals.clear();
         temp=myModel->getTriangle(i);//取得序列
         uvs=myModel->getUV(i);
+        normals=myModel->get_Normals(i);
         for(int j=0;j<3;j++)
         {
            //tempVertex[j]=world2screen(myModel->getVertex(temp[j])) ;
@@ -124,29 +116,27 @@ int  main()
             //screen_coordinate[j]= HomogeneousTo(lesson_M*PointToHomogeneous(original[j]));//screen coordinates
             screen_coordinate[j]=vertex_shader.TransVertex(world_coordinate[j]);
         }
-        //myShader.setVertex(original);
-        Vector3d normal=((world_coordinate[0]-world_coordinate[1]).cross(world_coordinate[0]-world_coordinate[2])).normalized();
-        double intensity=normal.dot(light_dir);
-        if(intensity>0)
-        {
-            my_rasterizer.do_rasterize(image,world_coordinate,screen_coordinate,zBufferP,uvs,texture_buffer,intensityArray,intensity);
+        myShader.setVertex(world_coordinate);
+        myShader.rasterize(image,myModel->diffuseMap,uvs,normals,light_dir,zBufferP);
+        // Vector3d normal=((world_coordinate[0]-world_coordinate[1]).cross(world_coordinate[0]-world_coordinate[2])).normalized();
+        // double intensity=normal.dot(light_dir);
+        // if(intensity>0)
+        // {
+        //     //my_rasterizer.do_rasterize(image,world_coordinate,screen_coordinate,zBufferP,uvs,texture_buffer,intensityArray,intensity);
 
-            // if(MSAA_bool)
-            // {
-            //     myShader.rasterize(image,myModel->diffuseMap,uvs,intensity,zBufferP,MSAA_Buffer,pixel_in);
-            //     myShader.doMSAA(image,pixel_in);
-            // }
-            // else
-            // {
-            //      myShader.rasterize(image,myModel->diffuseMap,uvs,intensity,zBufferP);
-            // }
-            
-            
-            //triangle3D(screen_coordinate[0],screen_coordinate[1],screen_coordinate[2],original,image, uvs,intensity,zBufferP,Mywidth,myModel->diffuseMap);
-            //triangle3D(tempVertex[0],tempVertex[1],tempVertex[2],image, uvs,intensity,zBufferP,Mywidth,myModel->diffuseMap);
-        }
+        //     if(MSAA_bool)
+        //     {
+        //         myShader.rasterize(image,myModel->diffuseMap,uvs,intensity,zBufferP,MSAA_Buffer,pixel_in);
+
+        //         myShader.doMSAA(image,pixel_in);
+        //     }
+        //     else
+        //     {
+        //          myShader.rasterize(image,myModel->diffuseMap,uvs,intensity,zBufferP);
+        //     }
+        // }
     }
-    my_fragment_shader.using_fragment_shader(image,myModel->diffuseMap,intensityArray);
+    //my_fragment_shader.using_fragment_shader(image,myModel->diffuseMap,intensityArray);
     
 
     image.flip_vertically();  
