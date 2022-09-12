@@ -152,7 +152,10 @@ MSAA使用以下公式来处理颜色：pixel_color = center_color * valid_point
 ![result9.png](result9.png)
 如图，分离之后的结果出现了问题
 
-
+# phong shading
+![result10.png](result10.png)
+从flat shading改成了phong shading
+看得出来效果还是好了很多
 
 
 
