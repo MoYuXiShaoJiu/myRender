@@ -117,7 +117,8 @@ int  main()
             screen_coordinate[j]=vertex_shader.TransVertex(world_coordinate[j]);
         }
         myShader.setVertex(world_coordinate);
-        myShader.rasterize(image,myModel->diffuseMap,uvs,normals,light_dir,zBufferP);
+        //myShader.rasterize(image,myModel->diffuseMap,uvs,normals,light_dir,zBufferP);
+        myShader.rasterize(image,myModel->diffuseMap,myModel->normalMap,vertex_shader,uvs,light_dir,zBufferP);
         // Vector3d normal=((world_coordinate[0]-world_coordinate[1]).cross(world_coordinate[0]-world_coordinate[2])).normalized();
         // double intensity=normal.dot(light_dir);
         // if(intensity>0)

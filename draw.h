@@ -126,4 +126,12 @@ Matrix4d cameraM(Vector3d eye_position,Vector3d gaze,Vector3d t)//其中eye_posi
 
 }
 
-
+Vector3d color_To_Vec3(TGAColor& color)
+{
+    Vector3d temp;
+    temp[0]=color.r;
+    temp[1]=color.g;
+    temp[2]=color.b;
+    return temp;
+    
+}

@@ -25,6 +25,7 @@ class model
     public:
 
     TGAImage diffuseMap;//用来存储纹理本身
+    TGAImage normalMap;//用来存储法线贴图
 
     model(const string fileName):vertexs(),faces(),textureN(),tex()//modle的构造函数，读入obj文件名
     {
@@ -113,6 +114,7 @@ class model
          std::cerr << "# v# " << vertexs.size() << " f# "  << faces.size() << "vn #"<<noramlNum.size()<<std::endl;
          cerr<<"# vt#" <<tex.size()<<endl;//检查没有问题
          loadDiffuseTex(fileName,"_diffuse.tga",diffuseMap);
+         loadDiffuseTex(fileName,"_nm.tga",normalMap);//读入法线贴图
          inputFile.close();
         //  for(int i=0;i<tex.size();i++)
         //  {
