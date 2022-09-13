@@ -33,7 +33,7 @@ int  main()
     */
 
     bool MSAA_bool=false;
-    Vector3d light_dir(0,0,1);
+    Vector3d light_dir(0.0,0.0,1.0);
     myModel = new model("obj/african_head.obj");//打开文件
     double zBuffer[Mywidth][Myheight] ;//= {0};//其实这里应该是无限远的值
     //double MSAA_Buffer[Mywidth][Myheight][4];
@@ -70,11 +70,11 @@ int  main()
     Vector3d original[3];
     vector<Vector2d> uvs;
     vector<Vector3d> normals;
-    Vector3d camera(0,0,3);//相机位置
+    //Vector3d camera(0,0,3);//相机位置
     Matrix4d projectiveM,CameraMatrix,MViewP,M;
-    Vector3d eye_position(0,0,3);//相机位置
+    Vector3d eye_position(0,2,3);//相机位置
     Vector3d gaze(1,1,-1);//朝向
-    Vector3d t(0,1,0);//分野
+    Vector3d t(0,1,1);//分野
     CameraMatrix=cameraM(eye_position,gaze,t);
     projectiveM=perspective(1,-1);//投影矩阵
     MViewP=Mvp(800,800);//Viewport
@@ -118,7 +118,7 @@ int  main()
         }
         myShader.setVertex(world_coordinate);
         //myShader.rasterize(image,myModel->diffuseMap,uvs,normals,light_dir,zBufferP);
-        myShader.rasterize(image,myModel->diffuseMap,myModel->normalMap,vertex_shader,uvs,light_dir,zBufferP);
+        myShader.rasterize(image,myModel,vertex_shader,uvs,light_dir,zBufferP);
         // Vector3d normal=((world_coordinate[0]-world_coordinate[1]).cross(world_coordinate[0]-world_coordinate[2])).normalized();
         // double intensity=normal.dot(light_dir);
         // if(intensity>0)

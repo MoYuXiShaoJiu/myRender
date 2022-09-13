@@ -208,10 +208,14 @@ class shader
 
     }
     //normal mapping
-    void rasterize(TGAImage &image,TGAImage& diffuseMap,TGAImage& normalMap,vertexShader& vertex_shader,vector<Vector2d>& uvs,Vector3d lightSource,double* zBuffer)
+    void rasterize(TGAImage &image,model* my_model,vertexShader& vertex_shader,vector<Vector2d>& uvs,Vector3d lightSource,double* zBuffer)
     {
         //求覆盖的像素
         //求插值
+        TGAImage normalMap,diffuseMap,specMap;
+        normalMap=my_model->normalMap;
+        diffuseMap=my_model->diffuseMap;
+        specMap=my_model->specMap;
         int left,right,top,bottom,I_width;//构造包围盒
         left=max(0.0,min(screen_coordinates[0].x(),min(screen_coordinates[1].x(),screen_coordinates[2].x())));
         right=min((double)image.get_width(),max(screen_coordinates[0].x(),max(screen_coordinates[1].x(),screen_coordinates[2].x())));
@@ -244,7 +248,7 @@ class shader
                         //finalColor=fragment(u,v,diffuseMap,intensity);
                         //finalColor=fragment(intensity);
                         //finalColor=fragment(u,v,p,vertex_intensity,diffuseMap);
-                        finalColor=fragment(u,v,lightSource,diffuseMap,normalMap,vertex_shader);
+                        finalColor=fragment(u,v,lightSource,diffuseMap,normalMap,specMap,vertex_shader);
                         zBuffer[i+j*I_width]=tempz;
                         image.set(i,j,finalColor);
                     }
@@ -305,20 +309,32 @@ class shader
         double intensity=p.dot(vertex_intensity);
         return diffuse.get(u*diffuse.get_width(),v*diffuse.get_height())*intensity;
     }
-    //normal mapping
-    TGAColor fragment(double u,double v,Vector3d& light_source,TGAImage& diffuse,TGAImage& normalMap,vertexShader& vertex_shader)
+    //normal mapping&phong's approimation
+    TGAColor fragment(double u,double v,Vector3d& light_source,TGAImage& diffuse,TGAImage& normalMap,TGAImage& specMap,vertexShader& vertex_shader)
     {
-        Vector3d n,l;
+        Vector3d n,l,r;
         TGAColor temp1,temp2;
+        double spec,diff,rNum,gNUm,bNUm;
+        TGAColor temp;
         temp1=normalMap.get(u*normalMap.get_width(),v*normalMap.get_height());
         //normal map是把向量存在了贴图里面，所以这里读出来的是法向量
         n=HomogeneousTo(vertex_shader.getTransMatrix().inverse()*vectorToHomogeneous(color_To_Vec3(temp1)));//把normal map上的向量转换到world space
         l=vertex_shader.TransVertex(light_source);
         n=n.normalized();
         l=l.normalized();
-        double intensity=max(0.0,n.dot(l));
-        return diffuse.get(u*diffuse.get_width(),v*diffuse.get_height())*intensity;
+        r=(n*(2.0*(n.dot(l)))-l).normalized();//反射的光线
+        diff=max(0.0,n.dot(l));//漫反射强度
+        spec=pow(max(r.z(),0.0),(double)specMap.get(u*specMap.get_width(),v*specMap.get_height()).b);
+        cout<<"r.z is "<<r.z()<<" pow is "<<(int)specMap.get(u*specMap.get_width(),v*specMap.get_height()).b<<" spec is "<<spec<<endl;
+        temp=diffuse.get(u*diffuse.get_width(),v*diffuse.get_height());
+        //调整颜色
+        rNum=min(255.0,5+temp.r*(diff+0.6*spec));
+        gNUm=min(255.0,5+temp.g*(diff+0.6*spec));
+        bNUm=min(255.0,5+temp.b*(diff+0.6*spec));
+        return TGAColor(rNum,gNUm,bNUm);
     }
+    
+
 
 
     void MSAA(int i,int j,double* MSAA_Buffer,bool* pixel,int I_width,int I_heigh)//MSAA_Buffer用来计算子像素点的深度置，pixel用来记录是子像素点是否在三角形内

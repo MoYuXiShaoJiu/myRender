@@ -33,6 +33,11 @@ shader(vertexShader,rasterizer,fragment,data)
 
 问题在于没有办法利用zbuffer
 
+## normal mapping
+light为什么要经过mvp变换？
+
+为什么法线要逆变换?
+
 
 
 

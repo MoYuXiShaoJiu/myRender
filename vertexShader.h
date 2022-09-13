@@ -6,7 +6,7 @@ using namespace Eigen;
 class vertexShader
 {
     private:
-    Matrix4d viewPort,projective,finalM,cameraMatrix;
+    Matrix4d viewPort,projective,finalM,cameraMatrix,finalfinalM;
     int image_width,image_heigh;
     public:
     //构造vertexShader
@@ -24,6 +24,7 @@ class vertexShader
                      0,0,0,1;
         cameraMatrix=cameraM(eye_position,gaze,t);
         finalM=viewPort*projective;
+        finalfinalM=viewPort*projective*cameraMatrix;
     }
     
     //变换

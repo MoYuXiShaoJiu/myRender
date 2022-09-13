@@ -135,3 +135,4 @@ Vector3d color_To_Vec3(TGAColor& color)
     return temp;
     
 }
+
