@@ -163,6 +163,9 @@ MSAA使用以下公式来处理颜色：pixel_color = center_color * valid_point
 使用了normal mapping
 我们可以看出这里人物脸上的疤痕要明显了很多，从高面数的模型上将normal map迁移到低面数的模型上，提高渲染的质量，我想有很广阔的应用空间。
 
+# phong approximation
+![result13.png](result13.png)
+添加了高光
 
 
 
