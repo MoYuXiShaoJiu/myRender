@@ -10,6 +10,8 @@
 - 分离了vertex sahder，rasterizer
 - 在fragmentshader，rasterizer和shader的关系处理上遇到了一点问题，主要的问题是intensity的处理，以及模拟gpu上的工作流程
 - 分离之后出现了结果上的错误
+- 实现了normal-mapping
+- 实现了blinn phong模型
 
 ## 问题
 其实这个项目所做的是在一步一步的实现opengl的部分功能，当然并没有那么强大。
@@ -165,7 +167,9 @@ MSAA使用以下公式来处理颜色：pixel_color = center_color * valid_point
 
 # phong approximation
 ![result13.png](result13.png)
-添加了高光
+
+添加了高光，更改了着色模型
+
 
 
 
